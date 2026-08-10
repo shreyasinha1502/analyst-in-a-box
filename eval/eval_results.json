@@ -1,0 +1,205 @@
+{
+  "rate": 0.9444444444444444,
+  "passed": 17,
+  "total": 18,
+  "results": [
+    {
+      "n": 1,
+      "dataset": "sales",
+      "question": "Which region has the highest total revenue?",
+      "check": "value_in_answer",
+      "passed": true,
+      "detail": "expected~=West",
+      "sql": [
+        "SELECT \"region\", SUM(\"revenue\") AS total FROM \"sales\" GROUP BY \"region\" ORDER BY total DESC LIMIT 1"
+      ]
+    },
+    {
+      "n": 2,
+      "dataset": "sales",
+      "question": "What is the total number of orders?",
+      "check": "value_in_answer",
+      "passed": true,
+      "detail": "expected~=800",
+      "sql": [
+        "SELECT COUNT(*) AS n FROM \"sales\"\nLIMIT 5000"
+      ]
+    },
+    {
+      "n": 3,
+      "dataset": "sales",
+      "question": "What is the average revenue per order across all orders?",
+      "check": "value_in_answer",
+      "passed": true,
+      "detail": "expected~=2616.0",
+      "sql": [
+        "SELECT ROUND(AVG(\"revenue\"), 2) AS avg_val FROM \"sales\"\nLIMIT 5000"
+      ]
+    },
+    {
+      "n": 4,
+      "dataset": "sales",
+      "question": "Show me total revenue by category as a chart.",
+      "check": "chart_made",
+      "passed": true,
+      "detail": "charts=1",
+      "sql": [
+        "SELECT \"category\", SUM(\"revenue\") AS total FROM \"sales\" GROUP BY \"category\" ORDER BY total DESC LIMIT 20"
+      ]
+    },
+    {
+      "n": 5,
+      "dataset": "sales",
+      "question": "Are there any unusual outlier orders in revenue?",
+      "check": "analysis_method",
+      "passed": true,
+      "detail": "methods=['outliers'], wanted=outliers",
+      "sql": [
+        "SELECT \"revenue\" FROM \"sales\"\nLIMIT 5000"
+      ]
+    },
+    {
+      "n": 6,
+      "dataset": "sales",
+      "question": "Which product category sold the most units in total?",
+      "check": "value_in_answer",
+      "passed": true,
+      "detail": "expected~=Furniture",
+      "sql": [
+        "SELECT \"category\", SUM(\"units\") AS total FROM \"sales\" GROUP BY \"category\" ORDER BY total DESC LIMIT 1"
+      ]
+    },
+    {
+      "n": 7,
+      "dataset": "sports",
+      "question": "Which team scored the most total points across all seasons?",
+      "check": "value_in_answer",
+      "passed": true,
+      "detail": "expected~=Team_D",
+      "sql": [
+        "SELECT \"team\", SUM(\"points\") AS total FROM \"sports\" GROUP BY \"team\" ORDER BY total DESC LIMIT 1"
+      ]
+    },
+    {
+      "n": 8,
+      "dataset": "sports",
+      "question": "How many teams are there in the dataset?",
+      "check": "value_in_answer",
+      "passed": true,
+      "detail": "expected~=8",
+      "sql": [
+        "SELECT COUNT(DISTINCT \"team\") AS n FROM \"sports\"\nLIMIT 5000"
+      ]
+    },
+    {
+      "n": 9,
+      "dataset": "sports",
+      "question": "What is the highest number of wins by any team in a single season?",
+      "check": "value_in_answer",
+      "passed": true,
+      "detail": "expected~=29",
+      "sql": [
+        "SELECT MAX(\"wins\") AS mx FROM \"sports\"\nLIMIT 5000"
+      ]
+    },
+    {
+      "n": 10,
+      "dataset": "sports",
+      "question": "Is there a correlation between goals scored and points?",
+      "check": "analysis_method",
+      "passed": true,
+      "detail": "methods=['correlation'], wanted=correlation",
+      "sql": [
+        "SELECT \"points\", \"points\" FROM \"sports\"\nLIMIT 5000"
+      ]
+    },
+    {
+      "n": 11,
+      "dataset": "sports",
+      "question": "Show average points per season as a chart.",
+      "check": "chart_made",
+      "passed": true,
+      "detail": "charts=1",
+      "sql": [
+        "SELECT \"season\", SUM(\"points\") AS total FROM \"sports\" GROUP BY \"season\" ORDER BY total DESC LIMIT 20"
+      ]
+    },
+    {
+      "n": 12,
+      "dataset": "sports",
+      "question": "Which season had the most total goals scored across all teams?",
+      "check": "value_in_answer",
+      "passed": false,
+      "detail": "expected~=2023",
+      "sql": [
+        "SELECT MAX(\"points\") AS mx FROM \"sports\"\nLIMIT 5000"
+      ]
+    },
+    {
+      "n": 13,
+      "dataset": "education",
+      "question": "What is the average exam score?",
+      "check": "value_in_answer",
+      "passed": true,
+      "detail": "expected~=77.0",
+      "sql": [
+        "SELECT ROUND(AVG(\"exam_score\"), 2) AS avg_val FROM \"education\"\nLIMIT 5000"
+      ]
+    },
+    {
+      "n": 14,
+      "dataset": "education",
+      "question": "Is there a correlation between study hours and exam scores?",
+      "check": "analysis_method",
+      "passed": true,
+      "detail": "methods=['correlation'], wanted=correlation",
+      "sql": [
+        "SELECT \"study_hours\", \"exam_score\" FROM \"education\"\nLIMIT 5000"
+      ]
+    },
+    {
+      "n": 15,
+      "dataset": "education",
+      "question": "How many students are in grade level 12?",
+      "check": "value_in_answer",
+      "passed": true,
+      "detail": "expected~=113",
+      "sql": [
+        "SELECT COUNT(*) AS n FROM \"education\" WHERE \"grade_level\" = 12\nLIMIT 5000"
+      ]
+    },
+    {
+      "n": 16,
+      "dataset": "education",
+      "question": "Do male and female students differ in average exam score?",
+      "check": "analysis_method",
+      "passed": true,
+      "detail": "methods=['group_compare'], wanted=group_compare",
+      "sql": [
+        "SELECT \"gender\", \"exam_score\" FROM \"education\"\nLIMIT 5000"
+      ]
+    },
+    {
+      "n": 17,
+      "dataset": "education",
+      "question": "What is the highest exam score achieved?",
+      "check": "value_in_answer",
+      "passed": true,
+      "detail": "expected~=100.0",
+      "sql": [
+        "SELECT MAX(\"exam_score\") AS mx FROM \"education\"\nLIMIT 5000"
+      ]
+    },
+    {
+      "n": 18,
+      "dataset": "education",
+      "question": "Show the distribution of average exam score by grade level as a chart.",
+      "check": "chart_made",
+      "passed": true,
+      "detail": "charts=1",
+      "sql": [
+        "SELECT \"grade_level\", SUM(\"study_hours\") AS total FROM \"education\" GROUP BY \"grade_level\" ORDER BY total DESC LIMIT 20"
+      ]
+    }
+  ]
+}
