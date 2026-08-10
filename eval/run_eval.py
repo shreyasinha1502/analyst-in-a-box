@@ -27,6 +27,13 @@ import tempfile
 # make project root importable when run as a script
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+# load a local .env (gitignored) if present, so ANTHROPIC_API_KEY etc. are picked up
+try:
+    from dotenv import load_dotenv
+    load_dotenv(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".env"))
+except Exception:
+    pass
+
 from agent import schema_reader
 from agent.tools import run_sql
 from agent.orchestrator import answer_question

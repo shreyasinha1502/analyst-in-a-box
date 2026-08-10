@@ -18,6 +18,9 @@ data/*.sqlite
 *.db-journal
 /tmp_charts/
 
+# Local tooling
+.claude/
+
 # OS / editor
 .DS_Store
 Thumbs.db
