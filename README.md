@@ -189,6 +189,11 @@ For HF Spaces (Docker SDK): push the repo, add the key under **Repository secret
 
 - **Custom tool-calling loop over LangGraph** — for 3 tools and a linear-ish chain, a ~150-line loop is easier to read, debug, and keep provider-agnostic than pulling in a framework.
 - **Everything routed through SQL** — even uploaded flat files are loaded into SQLite so there's one safe, validated execution path (read-only) instead of executing arbitrary pandas.
-- **Provider-swappable (`anthropic` | `openai` | `mock`)** — the `mock` provider is a key-free test double so the eval harness and pipeline can be validated in CI without API spend. It is **not** a proof of answer quality; real numbers need a real key.
+- **Provider-swappable (`groq` | `gemini` | `anthropic` | `openai` | `mock`)** — Groq/Gemini give a free tier; the `mock` provider is a key-free test double so the eval harness and pipeline can be validated in CI without API spend.
 - **Schema summary is the only dataset context** — this is the core design choice that keeps the system generic.
-```
+
+---
+
+## License
+
+[MIT](LICENSE) — free to use, modify, and share.
