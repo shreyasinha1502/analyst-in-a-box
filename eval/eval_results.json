@@ -1,6 +1,6 @@
 {
-  "rate": 0.9444444444444444,
-  "passed": 17,
+  "rate": 0.8888888888888888,
+  "passed": 16,
   "total": 18,
   "results": [
     {
@@ -11,7 +11,7 @@
       "passed": true,
       "detail": "expected~=West",
       "sql": [
-        "SELECT \"region\", SUM(\"revenue\") AS total FROM \"sales\" GROUP BY \"region\" ORDER BY total DESC LIMIT 1"
+        "SELECT region, SUM(revenue) AS total_revenue\nFROM sales\nGROUP BY region\nORDER BY total_revenue DESC\nLIMIT 1"
       ]
     },
     {
@@ -22,7 +22,7 @@
       "passed": true,
       "detail": "expected~=800",
       "sql": [
-        "SELECT COUNT(*) AS n FROM \"sales\"\nLIMIT 5000"
+        "SELECT COUNT(*) AS total_orders FROM sales\nLIMIT 5000"
       ]
     },
     {
@@ -33,7 +33,7 @@
       "passed": true,
       "detail": "expected~=2616.0",
       "sql": [
-        "SELECT ROUND(AVG(\"revenue\"), 2) AS avg_val FROM \"sales\"\nLIMIT 5000"
+        "SELECT AVG(revenue) AS avg_revenue FROM sales\nLIMIT 5000"
       ]
     },
     {
@@ -44,7 +44,7 @@
       "passed": true,
       "detail": "charts=1",
       "sql": [
-        "SELECT \"category\", SUM(\"revenue\") AS total FROM \"sales\" GROUP BY \"category\" ORDER BY total DESC LIMIT 20"
+        "SELECT category, SUM(revenue) AS total_revenue FROM sales GROUP BY category ORDER BY total_revenue DESC\nLIMIT 5000"
       ]
     },
     {
@@ -55,7 +55,7 @@
       "passed": true,
       "detail": "methods=['outliers'], wanted=outliers",
       "sql": [
-        "SELECT \"revenue\" FROM \"sales\"\nLIMIT 5000"
+        "SELECT order_id, revenue FROM sales\nLIMIT 5000"
       ]
     },
     {
@@ -66,7 +66,7 @@
       "passed": true,
       "detail": "expected~=Furniture",
       "sql": [
-        "SELECT \"category\", SUM(\"units\") AS total FROM \"sales\" GROUP BY \"category\" ORDER BY total DESC LIMIT 1"
+        "SELECT category, SUM(units) AS total_units FROM sales GROUP BY category ORDER BY total_units DESC LIMIT 1"
       ]
     },
     {
@@ -74,10 +74,10 @@
       "dataset": "sports",
       "question": "Which team scored the most total points across all seasons?",
       "check": "value_in_answer",
-      "passed": true,
+      "passed": false,
       "detail": "expected~=Team_D",
       "sql": [
-        "SELECT \"team\", SUM(\"points\") AS total FROM \"sports\" GROUP BY \"team\" ORDER BY total DESC LIMIT 1"
+        "SELECT team, SUM(points) as total_points FROM sports GROUP BY team ORDER BY total_points DESC LIMIT 1"
       ]
     },
     {
@@ -88,7 +88,7 @@
       "passed": true,
       "detail": "expected~=8",
       "sql": [
-        "SELECT COUNT(DISTINCT \"team\") AS n FROM \"sports\"\nLIMIT 5000"
+        "SELECT COUNT(DISTINCT team) AS team_count FROM sports\nLIMIT 5000"
       ]
     },
     {
@@ -99,7 +99,7 @@
       "passed": true,
       "detail": "expected~=29",
       "sql": [
-        "SELECT MAX(\"wins\") AS mx FROM \"sports\"\nLIMIT 5000"
+        "SELECT MAX(wins) AS max_wins FROM sports\nLIMIT 5000"
       ]
     },
     {
@@ -110,7 +110,7 @@
       "passed": true,
       "detail": "methods=['correlation'], wanted=correlation",
       "sql": [
-        "SELECT \"points\", \"points\" FROM \"sports\"\nLIMIT 5000"
+        "SELECT goals_for, points FROM sports\nLIMIT 5000"
       ]
     },
     {
@@ -121,7 +121,7 @@
       "passed": true,
       "detail": "charts=1",
       "sql": [
-        "SELECT \"season\", SUM(\"points\") AS total FROM \"sports\" GROUP BY \"season\" ORDER BY total DESC LIMIT 20"
+        "SELECT season, AVG(points) AS avg_points FROM sports GROUP BY season ORDER BY season\nLIMIT 5000"
       ]
     },
     {
@@ -129,10 +129,10 @@
       "dataset": "sports",
       "question": "Which season had the most total goals scored across all teams?",
       "check": "value_in_answer",
-      "passed": false,
+      "passed": true,
       "detail": "expected~=2023",
       "sql": [
-        "SELECT MAX(\"points\") AS mx FROM \"sports\"\nLIMIT 5000"
+        "SELECT season, SUM(goals_for) AS total_goals FROM sports GROUP BY season ORDER BY total_goals DESC LIMIT 1"
       ]
     },
     {
@@ -143,7 +143,7 @@
       "passed": true,
       "detail": "expected~=77.0",
       "sql": [
-        "SELECT ROUND(AVG(\"exam_score\"), 2) AS avg_val FROM \"education\"\nLIMIT 5000"
+        "SELECT AVG(exam_score) AS avg_exam_score FROM education\nLIMIT 5000"
       ]
     },
     {
@@ -154,7 +154,7 @@
       "passed": true,
       "detail": "methods=['correlation'], wanted=correlation",
       "sql": [
-        "SELECT \"study_hours\", \"exam_score\" FROM \"education\"\nLIMIT 5000"
+        "SELECT study_hours, exam_score FROM education\nLIMIT 5000"
       ]
     },
     {
@@ -165,7 +165,7 @@
       "passed": true,
       "detail": "expected~=113",
       "sql": [
-        "SELECT COUNT(*) AS n FROM \"education\" WHERE \"grade_level\" = 12\nLIMIT 5000"
+        "SELECT COUNT(*) AS student_count FROM education WHERE grade_level = 12\nLIMIT 5000"
       ]
     },
     {
@@ -173,10 +173,10 @@
       "dataset": "education",
       "question": "Do male and female students differ in average exam score?",
       "check": "analysis_method",
-      "passed": true,
-      "detail": "methods=['group_compare'], wanted=group_compare",
+      "passed": false,
+      "detail": "methods=[], wanted=group_compare",
       "sql": [
-        "SELECT \"gender\", \"exam_score\" FROM \"education\"\nLIMIT 5000"
+        "SELECT gender, AVG(exam_score) AS avg_exam_score, COUNT(*) AS n FROM education GROUP BY gender\nLIMIT 5000"
       ]
     },
     {
@@ -187,7 +187,7 @@
       "passed": true,
       "detail": "expected~=100.0",
       "sql": [
-        "SELECT MAX(\"exam_score\") AS mx FROM \"education\"\nLIMIT 5000"
+        "SELECT MAX(exam_score) AS max_exam_score FROM education\nLIMIT 5000"
       ]
     },
     {
@@ -198,7 +198,7 @@
       "passed": true,
       "detail": "charts=1",
       "sql": [
-        "SELECT \"grade_level\", SUM(\"study_hours\") AS total FROM \"education\" GROUP BY \"grade_level\" ORDER BY total DESC LIMIT 20"
+        "SELECT grade_level, AVG(exam_score) AS avg_exam_score FROM education GROUP BY grade_level ORDER BY grade_level\nLIMIT 5000"
       ]
     }
   ]

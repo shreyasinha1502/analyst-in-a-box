@@ -139,18 +139,18 @@ python -m eval.run_eval --limit 3        # quick check
 
 ### Results
 
-**Offline planner (`--provider mock`, no API key):** a schema-driven keyword planner used for CI smoke tests. It exercises the full pipeline (schema → tools → scoring) without API spend, but is *deliberately dumber than a real LLM.*
+**Real LLM — Groq `openai/gpt-oss-120b` (free tier):** the actual agent, run end-to-end against all 18 questions.
 
 | Dataset | Passed |
 |---|---|
 | sales | 6/6 (100%) |
 | sports | 5/6 (83%) |
-| education | 6/6 (100%) |
-| **Overall** | **17/18 (94%)** |
+| education | 5/6 (83%) |
+| **Overall** | **16/18 (89%)** |
 
-The single miss is a sports question (`"which season had the most total goals scored"`) where the naive keyword planner picks the wrong measure and doesn't group by the numeric `season` column — an LLM resolves this trivially.
+The two misses are strict-checker artifacts, not wrong analysis — e.g. for *"do male and female students differ in average exam score?"* the model answered correctly with direct SQL group averages instead of invoking the dedicated `group_compare` stat method the checker looked for. Same harness runs identically on `--provider anthropic` / `openai` / `gemini`.
 
-**Real LLM (`--provider anthropic` / `openai`):** _run this with your key and paste the numbers here._ The value/chart/analysis checks are provider-independent, so the harness works identically.
+**Offline planner (`--provider mock`, no API key):** a schema-driven keyword planner for zero-cost CI smoke tests — exercises the full pipeline (schema → tools → scoring) without any API spend. Scores **17/18 (94%)**, but is *deliberately dumber than a real LLM* and exists only so the harness can run in CI.
 
 ---
 
@@ -158,7 +158,7 @@ The single miss is a sports question (`"which season had the most total goals sc
 
 - **Per-session cap:** `MAX_SESSION_QUESTIONS` (default 15) tracked in `st.session_state`; a friendly message shows when hit.
 - **Per-day global cap:** `MAX_DAILY_QUESTIONS` (default 200) tracked in a tiny SQLite counter (`agent/usage.py`).
-- **No hardcoded keys:** read from `ANTHROPIC_API_KEY` / `OPENAI_API_KEY` (env or Streamlit Secrets). `.env` and `secrets.toml` are gitignored.
+- **No hardcoded keys:** read from `GROQ_API_KEY` / `GEMINI_API_KEY` / `ANTHROPIC_API_KEY` / `OPENAI_API_KEY` (env or Streamlit Secrets). `.env` and `secrets.toml` are gitignored.
 - **Read-only, sandboxed SQL:** generated queries are validated — only `SELECT`/`WITH`, single statement, `PRAGMA query_only`, `mode=ro` connection, forbidden-keyword blocklist (`INSERT/UPDATE/DELETE/DROP/…`), auto-`LIMIT`, and a query timeout.
 - **Resilient LLM calls:** every provider call is wrapped in try/except with a timeout, so one bad call returns a friendly error instead of crashing the app.
 
@@ -170,10 +170,10 @@ The single miss is a sports question (`"which season had the most total goals sc
 1. Push to a **public GitHub repo** (`.gitignore` already excludes `.env`, `__pycache__`, `data/*.db`).
 2. Verify `requirements.txt` installs cleanly in a fresh venv.
 3. On [share.streamlit.io](https://share.streamlit.io): connect the repo, set **`app.py`** as the entrypoint.
-4. In the app's **Secrets** panel, paste (TOML):
+4. In the app's **Secrets** panel, paste (TOML) — a **free** Groq key works, no credit card:
    ```toml
-   LLM_PROVIDER = "anthropic"
-   ANTHROPIC_API_KEY = "sk-ant-..."
+   LLM_PROVIDER = "groq"
+   GROQ_API_KEY = "gsk_..."   # free at https://console.groq.com/keys
    ```
 5. Load a sample dataset and ask a question to confirm it works end-to-end **before sharing the link**.
 
