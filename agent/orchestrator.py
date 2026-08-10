@@ -1,11 +1,12 @@
 """orchestrator.py — the agent loop (provider-swappable tool-calling).
 
-Supports Anthropic Claude and OpenAI via a thin adapter. The LLM is given the
-schema summary + tool definitions and autonomously chains run_sql -> run_analysis
--> make_chart -> written insight. Nothing is hardcoded to a dataset.
+Supports Anthropic Claude plus any OpenAI-compatible endpoint (OpenAI, Groq,
+Google Gemini) via a thin adapter. The LLM is given the schema summary + tool
+definitions and autonomously chains run_sql -> run_analysis -> make_chart ->
+written insight. Nothing is hardcoded to a dataset.
 
-Provider is selected by the LLM_PROVIDER env var ("anthropic" | "openai"),
-defaulting to anthropic. API keys come from ANTHROPIC_API_KEY / OPENAI_API_KEY.
+Provider is selected by LLM_PROVIDER ("groq" | "gemini" | "anthropic" | "openai").
+Groq and Gemini have free tiers. Keys come from the matching *_API_KEY env var.
 """
 
 from __future__ import annotations
@@ -20,9 +21,28 @@ from . import tools as toolmod
 from .prompts import build_system_prompt, TOOLS
 
 DEFAULT_ANTHROPIC_MODEL = os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-5")
-DEFAULT_OPENAI_MODEL = os.environ.get("OPENAI_MODEL", "gpt-4o")
 MAX_STEPS = int(os.environ.get("AGENT_MAX_STEPS", "8"))
 LLM_TIMEOUT_S = int(os.environ.get("LLM_TIMEOUT_S", "60"))
+
+# OpenAI-compatible providers (all use the OpenAI SDK with a base_url override).
+# Groq and Gemini both offer a *free* tier and support tool/function calling.
+OPENAI_COMPATIBLE = {
+    "openai": {
+        "base_url": None,  # default OpenAI endpoint
+        "key_env": "OPENAI_API_KEY",
+        "model": os.environ.get("OPENAI_MODEL", "gpt-4o"),
+    },
+    "groq": {
+        "base_url": "https://api.groq.com/openai/v1",
+        "key_env": "GROQ_API_KEY",
+        "model": os.environ.get("GROQ_MODEL", "llama-3.3-70b-versatile"),
+    },
+    "gemini": {
+        "base_url": "https://generativelanguage.googleapis.com/v1beta/openai/",
+        "key_env": "GEMINI_API_KEY",
+        "model": os.environ.get("GEMINI_MODEL", "gemini-2.0-flash"),
+    },
+}
 
 
 @dataclass
@@ -298,10 +318,12 @@ def _openai_tools() -> list[dict]:
     } for t in TOOLS]
 
 
-def _run_openai(system: str, question: str, runner: _ToolRunner,
-                history: list[dict] | None) -> str:
+def _run_openai_compatible(system: str, question: str, runner: _ToolRunner,
+                           history: list[dict] | None,
+                           base_url: str | None, model: str, api_key: str) -> str:
     from openai import OpenAI
-    client = OpenAI(timeout=LLM_TIMEOUT_S)
+    client = OpenAI(timeout=LLM_TIMEOUT_S, api_key=api_key,
+                    **({"base_url": base_url} if base_url else {}))
     messages: list[dict] = [{"role": "system", "content": system}]
     messages.extend(history or [])
     messages.append({"role": "user", "content": question})
@@ -309,7 +331,7 @@ def _run_openai(system: str, question: str, runner: _ToolRunner,
 
     for _ in range(MAX_STEPS):
         resp = client.chat.completions.create(
-            model=DEFAULT_OPENAI_MODEL, messages=messages, tools=oa_tools,
+            model=model, messages=messages, tools=oa_tools,
         )
         msg = resp.choices[0].message
         messages.append(msg.model_dump(exclude_none=True))
@@ -345,19 +367,30 @@ def answer_question(
     runner = _ToolRunner(db_path, result)
     system = build_system_prompt(schema_text)
 
-    if provider not in ("mock",):
-        key_env = "ANTHROPIC_API_KEY" if provider == "anthropic" else "OPENAI_API_KEY"
-        if not os.environ.get(key_env):
-            result.error = f"Missing {key_env}. Set it in your environment / Secrets manager."
-            result.answer = result.error
-            return result
+    # resolve which API key env var this provider needs
+    if provider == "anthropic":
+        key_env = "ANTHROPIC_API_KEY"
+    elif provider in OPENAI_COMPATIBLE:
+        key_env = OPENAI_COMPATIBLE[provider]["key_env"]
+    else:
+        key_env = None
+
+    if provider != "mock" and key_env and not os.environ.get(key_env):
+        result.error = f"Missing {key_env}. Set it in your environment / Secrets manager."
+        result.answer = result.error
+        return result
 
     try:
         start = time.time()
         if provider == "anthropic":
             result.answer = _run_anthropic(system, question, runner, history)
-        elif provider == "openai":
-            result.answer = _run_openai(system, question, runner, history)
+        elif provider in OPENAI_COMPATIBLE:
+            cfg = OPENAI_COMPATIBLE[provider]
+            result.answer = _run_openai_compatible(
+                system, question, runner, history,
+                base_url=cfg["base_url"], model=cfg["model"],
+                api_key=os.environ.get(cfg["key_env"], ""),
+            )
         elif provider == "mock":
             result.answer = _run_mock(question, schema_text, runner)
         else:

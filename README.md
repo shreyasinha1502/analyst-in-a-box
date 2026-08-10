@@ -73,7 +73,7 @@ The LLM **autonomously chains** the tools (e.g. `run_sql → run_analysis → ma
 | Layer | Choice |
 |---|---|
 | Language | Python 3.11+ |
-| LLM | Anthropic Claude **or** OpenAI (swap via `LLM_PROVIDER`) |
+| LLM | **Groq / Gemini (free)** or Anthropic / OpenAI (paid) — swap via `LLM_PROVIDER` |
 | Agent loop | Lightweight custom tool-calling loop (no heavy framework) |
 | Database | SQLite via SQLAlchemy |
 | Analysis | pandas, scipy, statsmodels |

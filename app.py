@@ -13,8 +13,8 @@ import tempfile
 import streamlit as st
 
 # Allow API keys / config to come from Streamlit Secrets (never committed).
-for _k in ("ANTHROPIC_API_KEY", "OPENAI_API_KEY", "LLM_PROVIDER",
-           "ANTHROPIC_MODEL", "OPENAI_MODEL"):
+for _k in ("ANTHROPIC_API_KEY", "OPENAI_API_KEY", "GROQ_API_KEY", "GEMINI_API_KEY",
+           "LLM_PROVIDER", "ANTHROPIC_MODEL", "OPENAI_MODEL", "GROQ_MODEL", "GEMINI_MODEL"):
     try:
         if _k in st.secrets and not os.environ.get(_k):
             os.environ[_k] = str(st.secrets[_k])
@@ -110,17 +110,32 @@ with st.sidebar:
 
     st.divider()
     st.markdown('<div class="side-label">2 · Model</div>', unsafe_allow_html=True)
+    # groq & gemini have generous FREE tiers (no credit card) and support tool calling
+    PROVIDER_KEY = {
+        "groq": "GROQ_API_KEY", "gemini": "GEMINI_API_KEY",
+        "anthropic": "ANTHROPIC_API_KEY", "openai": "OPENAI_API_KEY",
+    }
+    PROVIDER_LABEL = {
+        "groq": "Groq · Llama 3.3 (free)", "gemini": "Google Gemini (free)",
+        "anthropic": "Anthropic Claude (paid)", "openai": "OpenAI GPT (paid)",
+    }
+    _opts = list(PROVIDER_KEY)
+    _default = os.environ.get("LLM_PROVIDER", "groq")
     provider = st.selectbox(
-        "LLM provider", ["anthropic", "openai"],
-        index=0 if os.environ.get("LLM_PROVIDER", "anthropic") == "anthropic" else 1,
+        "LLM provider", _opts,
+        index=_opts.index(_default) if _default in _opts else 0,
+        format_func=lambda p: PROVIDER_LABEL[p],
         label_visibility="collapsed",
     )
     os.environ["LLM_PROVIDER"] = provider
-    key_env = "ANTHROPIC_API_KEY" if provider == "anthropic" else "OPENAI_API_KEY"
+    key_env = PROVIDER_KEY[provider]
     if not os.environ.get(key_env):
         st.warning(f"{key_env} not set — add it in Secrets.", icon="🔑")
     else:
         st.caption(f"🟢 {provider} key detected")
+    if provider in ("groq", "gemini"):
+        _url = "console.groq.com/keys" if provider == "groq" else "aistudio.google.com/apikey"
+        st.caption(f"💡 Free key → {_url}")
 
     st.divider()
     st.markdown(ui.meter_html(st.session_state.n_questions, MAX_SESSION_QUESTIONS,
