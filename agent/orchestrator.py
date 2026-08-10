@@ -34,8 +34,10 @@ OPENAI_COMPATIBLE = {
     },
     "groq": {
         "base_url": "https://api.groq.com/openai/v1",
+        # gpt-oss-120b does structured tool-calling reliably; llama-3.3 on Groq
+        # intermittently emits malformed <function=...> text and gets rejected.
         "key_env": "GROQ_API_KEY",
-        "model": os.environ.get("GROQ_MODEL", "llama-3.3-70b-versatile"),
+        "model": os.environ.get("GROQ_MODEL", "openai/gpt-oss-120b"),
     },
     "gemini": {
         "base_url": "https://generativelanguage.googleapis.com/v1beta/openai/",
