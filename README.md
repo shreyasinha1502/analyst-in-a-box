@@ -4,11 +4,16 @@
 
 > Nothing is hardcoded to a domain. The **same** agent code runs on a sales dataset, a sports dataset, and a student-records dataset with **zero code changes** — everything is derived from the schema at runtime.
 
-<!-- 🔗 LIVE DEMO: <add your Streamlit / HF Spaces URL here> -->
+### 🔗 [**Live demo → analyst-in-a-box.streamlit.app**](https://analyst-in-a-box-xyhk9grpaiknmnmqqtrege.streamlit.app/)
+
+[![Live Demo](https://img.shields.io/badge/Live_Demo-Streamlit-7C5CFF?style=for-the-badge&logo=streamlit&logoColor=white)](https://analyst-in-a-box-xyhk9grpaiknmnmqqtrege.streamlit.app/)
+[![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white)](#)
+[![Built with Claude](https://img.shields.io/badge/LLM-Claude_/_OpenAI-22D3EE?style=for-the-badge)](#)
+
+> Open the live app → click a **sample dataset** (Sales / Sports / Education) → ask a question in plain English or Hindi.
+
 <!-- 🎬 DEMO GIF: drop a 30–60s screen recording at docs/demo.gif and it renders below -->
 <!-- ![demo](docs/demo.gif) -->
-
-> **Deploy status:** code is complete and verified locally. The live link + GIF go here once you deploy (steps below). Deployment needs *your* API key set via the host's Secrets manager — it is never committed.
 
 ---
 
